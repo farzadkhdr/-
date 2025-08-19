@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستەمی بەڕێوەبردنی دوکانی جلوبەرگ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar-menu li {
+            padding: 10px 20px;
+            border-bottom: 1px solid #34495e;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sidebar-menu li:hover {
+            background-color: #34495e;
+        }
+        .sidebar-menu li.active {
+            background-color: #3498db;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+        }
+        .header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .section.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: right;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .dashboard-cards {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 30%;
+            text-align: center;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .card p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .login-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .login-box h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- پەڕەی چوونەژوورەوە -->
+    <div id="login-page" class="login-container">
+        <div class="login-box">
+            <h2>چوونەژوورەوە بۆ سیستەم</h2>
+            <div class="form-group">
+                <label for="username">ناوی بەکارهێنەر</label>
+                <input type="text" id="username" placeholder="ناوی بەکارهێنەر">
+            </div>
+            <div class="form-group">
+                <label for="password">پاسوۆرد</label>
+                <input type="password" id="password" placeholder="پاسوۆرد">
+            </div>
+            <button id="login-btn">چوونەژوورەوە</button>
+            <p id="login-error" style="color: red; margin-top: 10px; display: none;">ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە!</p>
+        </div>
+    </div>
+
+    <!-- پەڕەی سەرەکی -->
+    <div id="main-page" class="container hidden">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>سیستەمی جلوبەرگ</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active" data-section="dashboard">داشبۆرد</li>
+                <li data-section="sales">فرۆشتن</li>
+                <li data-section="purchases">کڕین</li>
+                <li data-section="inventory">کۆگا</li>
+                <li data-section="sales-history">مێژووی فرۆشتن</li>
+                <li data-section="purchase-history">مێژووی کڕین</li>
+                <li data-section="expenses">سەرفەکان</li>
+                <li data-section="settings">رێکخستن</li>
+                <li id="logout-btn">دەرچوون</li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h2 id="section-title">داشبۆرد</h2>
+                <div id="current-date"></div>
+            </div>
+
+            <!-- داشبۆرد -->
+            <div id="dashboard" class="section active">
+                <div class="dashboard-cards">
+                    <div class="card">
+                        <h3>کۆی فرۆشتن</h3>
+                        <p id="total-sales">0 دینار</p>
+                    </div>
+                    <div class="card">
+                        <h3>کۆی کڕین</h3>
+                        <p id="total-purchases">0 دینار</p>
+                    </div>
+                    <div class="card">
+                        <h3>قازانج</h3>
+                        <p id="total-profit">0 دینار</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- فرۆشتن -->
+            <div id="sales" class="section">
+                <div class="form-group">
+                    <label>گەڕان بۆ جلوبەرگ</label>
+                    <input type="text" id="search-clothes" placeholder="ناوی جلوبەرگ یان بارکۆد">
+                    <div id="clothes-suggestions" style="margin-top: 10px;"></div>
+                </div>
+                
+                <div id="selected-clothes-info" style="display: none;">
+                    <h3>زانیارییەکانی جلوبەرگ</h3>
+                    <div class="form-group">
+                        <label>رەنگ</label>
+                        <select id="clothes-color">
+                            <option value="">رەنگ هەڵبژێرە</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>بڕ</label>
+                        <input type="number" id="clothes-quantity" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>نرخی فرۆشتن</label>
+                        <input type="number" id="clothes-price">
+                    </div>
+                    <button id="add-to-cart">زیادکردن بۆ سەبەتە</button>
+                </div>
+                
+                <h3>سەبەتە</h3>
+                <table id="cart-table">
+                    <thead>
+                        <tr>
+                            <th>ناوی جلوبەرگ</th>
+                            <th>رەنگ</th>
+                            <th>بڕ</th>
+                            <th>نرخ</th>
+                            <th>کۆی گشتی</th>
+                            <th>کردار</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+                <div style="margin-top: 20px; text-align: left;">
+                    <h3>کۆی گشتی: <span id="total-amount">0 دینار</span></h3>
+                    <button id="complete-sale">تەواوکردنی فرۆشتن</button>
+                    <button id="print-invoice">چاپکردنی فاتوورە</button>
+                </div>
+            </div>
+
+            <!-- کڕین -->
+            <div id="purchases" class="section">
+                <h2>تۆمارکردنی کڕینی نوێ</h2>
+                <div class="form-group">
+                    <label>ناوی جلوبەرگ</label>
+                    <input type="text" id="purchase-clothes-name" placeholder="ناوی جلوبەرگ">
+                </div>
+                <div class="form-group">
+                    <label>ناوی شەریکە</label>
+                    <input type="text" id="purchase-supplier" placeholder="ناوی شەریکە">
+                </div>
+                <div class="form-group">
+                    <label>نرخی کڕین</label>
+                    <input type="number" id="purchase-price" placeholder="نرخی کڕین">
+                </div>
+                <div class="form-group">
+                    <label>بڕ</label>
+                    <input type="number" id="purchase-quantity" placeholder="بڕ" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label>رەنگ</label>
+                    <input type="text" id="purchase-color" placeholder="رەنگ">
+                </div>
+                <div class="form-group">
+                    <label>بارکۆد</label>
+                    <input type="text" id="purchase-barcode" placeholder="بارکۆد">
+                </div>
+                <button id="save-purchase">تۆمارکردنی کڕین</button>
+            </div>
+
+            <!-- کۆگا -->
+            <div id="inventory" class="section">
+                <div class="form-group">
+                    <label>گەڕان لە کۆگا</label>
+                    <input type="text" id="inventory-search" placeholder="ناوی جلوبەرگ یان بارکۆد">
+                </div>
+                
+                <table id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>ناوی جلوبەرگ</th>
+                            <th>بارکۆد</th>
+                            <th>بڕی بەردەست</th>
+                            <th>نرخی کڕین</th>
+                            <th>نرخی فرۆشتن</th>
+                            <th>رەنگەکان</th>
+                            <th>کردار</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+                <h2>زیادکردنی جلوبەرگی نوێ</h2>
+                <div class="form-group">
+                    <label>ناوی جلوبەرگ</label>
+                    <input type="text" id="new-clothes-name" placeholder="ناوی جلوبەرگ">
+                </div>
+                <div class="form-group">
+                    <label>نرخی کڕین</label>
+                    <input type="number" id="new-clothes-purchase-price" placeholder="نرخی کڕین">
+                </div>
+                <div class="form-group">
+                    <label>نرخی فرۆشتن</label>
+                    <input type="number" id="new-clothes-sale-price" placeholder="نرخی فرۆشتن">
+                </div>
+                <div class="form-group">
+                    <label>بڕی بەردەست</label>
+                    <input type="number" id="new-clothes-quantity" placeholder="بڕ" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label>رەنگ</label>
+                    <input type="text" id="new-clothes-color" placeholder="رەنگ">
+                </div>
+                <div class="form-group">
+                    <label>بارکۆد</label>
+                    <input type="text" id="new-clothes-barcode" placeholder="بارکۆد">
+                </div>
+                <button id="add-new-clothes">زیادکردنی جلوبەرگ</button>
+            </div>
+
+            <!-- مێژووی فرۆشتن -->
+            <div id="sales-history" class="section">
+                <div class="form-group">
+                    <label>گەڕان بە کۆدی فاتوورە</label>
+                    <input type="text" id="search-invoice" placeholder="کۆدی فاتوورە">
+                    <button id="search-invoice-btn">گەڕان</button>
+                </div>
+                
+                <table id="sales-history-table">
+                    <thead>
+                        <tr>
+                            <th>کۆدی فاتوورە</th>
+                            <th>بەروار</th>
+                            <th>کۆی گشتی</th>
+                            <th>کردار</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- مێژووی کڕین -->
+            <div id="purchase-history" class="section">
+                <div class="form-group">
+                    <label>گەڕان بە کۆدی فاتوورە</label>
+                    <input type="text" id="search-purchase-invoice" placeholder="کۆدی فاتوورە">
+                    <button id="search-purchase-invoice-btn">گەڕان</button>
+                </div>
+                
+                <table id="purchase-history-table">
+                    <thead>
+                        <tr>
+                            <th>کۆدی فاتوورە</th>
+                            <th>بەروار</th>
+                            <th>ناوی شەریکە</th>
+                            <th>کۆی گشتی</th>
+                            <th>کردار</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- سەرفەکان -->
+            <div id="expenses" class="section">
+                <h2>تۆمارکردنی سەرف</h2>
+                <div class="form-group">
+                    <label>بڕی سەرف</label>
+                    <input type="number" id="expense-amount" placeholder="بڕی سەرف">
+                </div>
+                <div class="form-group">
+                    <label>هۆکاری سەرف</label>
+                    <input type="text" id="expense-reason" placeholder="هۆکاری سەرف">
+                </div>
+                <button id="save-expense">تۆمارکردنی سەرف</button>
+                
+                <h2>مێژووی سەرفەکان</h2>
+                <table id="expenses-table">
+                    <thead>
+                        <tr>
+                            <th>بەروار</th>
+                            <th>بڕ</th>
+                            <th>هۆکار</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- رێکخستن -->
+            <div id="settings" class="section">
+                <h2>گۆڕینی پاسوۆرد</h2>
+                <div class="form-group">
+                    <label>پاسوۆردی کۆن</label>
+                    <input type="password" id="old-password" placeholder="پاسوۆردی کۆن">
+                </div>
+                <div class="form-group">
+                    <label>پاسوۆردی نوێ</label>
+                    <input type="password" id="new-password" placeholder="پاسوۆردی نوێ">
+                </div>
+                <div class="form-group">
+                    <label>دووبارەکردنەوەی پاسوۆردی نوێ</label>
+                    <input type="password" id="confirm-new-password" placeholder="دووبارەکردنەوەی پاسوۆردی نوێ">
+                </div>
+                <button id="change-password-btn">گۆڕینی پاسوۆرد</button>
+                <p id="password-change-message" style="margin-top: 10px;"></p>
+                
+                <h2 style="margin-top: 30px;">گەڕاندنەوەی پاسوۆرد</h2>
+                <button id="reset-password-btn">گەڕاندنەوەی پاسوۆرد بۆ بنەڕەت</button>
+                <p id="reset-password-message" style="margin-top: 10px;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // زانیارییە بنەڕەتییەکان
+        const defaultPassword = "farzadprogram";
+        let currentPassword = defaultPassword;
+        let isLoggedIn = false;
+        
+        // زانیارییە نموونەییەکان
+        let clothes = [
+            { id: 1, name: "بلۆزی پیسکێن", barcode: "BLZ001", purchasePrice: 15000, salePrice: 25000, quantity: 10, colors: ["سپی", "ڕەش", "شین"] },
+            { id: 2, name: "پانتۆڵی جین", barcode: "PNT001", purchasePrice: 20000, salePrice: 35000, quantity: 8, colors: ["ڕەش", "شین"] },
+            { id: 3, name: "کراس", barcode: "CRS001", purchasePrice: 25000, salePrice: 40000, quantity: 5, colors: ["سپی", "سۆر"] }
+        ];
+        
+        let sales = [];
+        let purchases = [];
+        let expenses = [];
+        let cart = [];
+        
+        // DOM Elements
+        const loginPage = document.getElementById('login-page');
+        const mainPage = document.getElementById('main-page');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginError = document.getElementById('login-error');
+        const sectionTitle = document.getElementById('section-title');
+        const currentDateElement = document.getElementById('current-date');
+        
+        // بەشی چوونەژوورەوە
+        loginBtn.addEventListener('click', () => {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            
+            if (password === currentPassword) {
+                isLoggedIn = true;
+                loginPage.classList.add('hidden');
+                mainPage.classList.remove('hidden');
+                updateCurrentDate();
+                updateDashboard();
+            } else {
+                loginError.style.display = 'block';
+            }
+        });
+        
+        // بەشی دەرچوون
+        logoutBtn.addEventListener('click', () => {
+            isLoggedIn = false;
+            mainPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+            usernameInput.value = '';
+            passwordInput.value = '';
+            loginError.style.display = 'none';
+        });
+        
+        // نیشاندانی بەرواری ئێستا
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateElement.textContent = now.toLocaleDateString('ar-IQ', options);
+        }
+        
+        // گۆڕینی نێوان بەشەکان
+        const menuItems = document.querySelectorAll('.sidebar-menu li');
+        const sections = document.querySelectorAll('.section');
+        
+        menuItems.forEach(item => {
+            if (item.id !== 'logout-btn') {
+                item.addEventListener('click', () => {
+                    // لابردنی چالاکی لە هەموو ئایتمەکان
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    // زیادکردنی چالاکی بۆ ئایتمی هەڵبژێردراو
+                    item.classList.add('active');
+                    
+                    // نیشاندانی بەشی هەڵبژێردراو
+                    const sectionId = item.getAttribute('data-section');
+                    sections.forEach(section => section.classList.remove('active'));
+                    document.getElementById(sectionId).classList.add('active');
+                    sectionTitle.textContent = item.textContent;
+                    
+                    // نوێکردنەوەی بەشەکە بەپێی پێویست
+                    if (sectionId === 'dashboard') {
+                        updateDashboard();
+                    } else if (sectionId === 'sales') {
+                        updateSalesSection();
+                    } else if (sectionId === 'inventory') {
+                        updateInventoryTable();
+                    } else if (sectionId === 'sales-history') {
+                        updateSalesHistoryTable();
+                    } else if (sectionId === 'purchase-history') {
+                        updatePurchaseHistoryTable();
+                    } else if (sectionId === 'expenses') {
+                        updateExpensesTable();
+                    }
+                });
+            }
+        });
+        
+        // نوێکردنەوەی داشبۆرد
+        function updateDashboard() {
+            const totalSales = sales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalPurchases = purchases.reduce((sum, purchase) => sum + (purchase.price * purchase.quantity), 0);
+            const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const profit = totalSales - totalPurchases - totalExpenses;
+            
+            document.getElementById('total-sales').textContent = totalSales.toLocaleString() + ' دینار';
+            document.getElementById('total-purchases').textContent = totalPurchases.toLocaleString() + ' دینار';
+            document.getElementById('total-profit').textContent = profit.toLocaleString() + ' دینار';
+        }
+        
+        // بەشی فرۆشتن
+        function updateSalesSection() {
+            const searchInput = document.getElementById('search-clothes');
+            const suggestionsDiv = document.getElementById('clothes-suggestions');
+            
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm.length > 0) {
+                    const filteredClothes = clothes.filter(item => 
+                        item.name.toLowerCase().includes(searchTerm) || 
+                        item.barcode.toLowerCase().includes(searchTerm)
+                    );
+                    
+                    suggestionsDiv.innerHTML = '';
+                    filteredClothes.forEach(item => {
+                        const div = document.createElement('div');
+                        div.textContent = `${item.name} (${item.barcode}) - بەردەست: ${item.quantity}`;
+                        div.style.padding = '5px';
+                        div.style.cursor = 'pointer';
+                        div.style.borderBottom = '1px solid #eee';
+                        div.addEventListener('click', () => {
+                            selectClothesForSale(item);
+                            searchInput.value = '';
+                            suggestionsDiv.innerHTML = '';
+                        });
+                        suggestionsDiv.appendChild(div);
+                    });
+                } else {
+                    suggestionsDiv.innerHTML = '';
+                }
+            });
+        }
+        
+        function selectClothesForSale(item) {
+            const clothesInfoDiv = document.getElementById('selected-clothes-info');
+            const colorSelect = document.getElementById('clothes-color');
+            const priceInput = document.getElementById('clothes-price');
+            
+            // پاککردنەوەی پێشویەکان
+            colorSelect.innerHTML = '<option value="">رەنگ هەڵبژێرە</option>';
+            
+            // زیادکردنی رەنگەکان
+            item.colors.forEach(color => {
+                const option = document.createElement('option');
+                option.value = color;
+                option.textContent = color;
+                colorSelect.appendChild(option);
+            });
+            
+            // دانانی نرخی فرۆشتن
+            priceInput.value = item.salePrice;
+            
+            // نیشاندانی زانیارییەکان
+            clothesInfoDiv.style.display = 'block';
+            
+            // زیادکردنی جلوبەرگ بۆ سەبەتە
+            document.getElementById('add-to-cart').onclick = () => {
+                const color = colorSelect.value;
+                const quantity = parseInt(document.getElementById('clothes-quantity').value);
+                const price = parseFloat(priceInput.value);
+                
+                if (!color) {
+                    alert('تکایە رەنگێک هەڵبژێرە!');
+                    return;
+                }
+                
+                if (quantity > item.quantity) {
+                    alert(`بڕی داواکراو زیاترە لە بەردەست! بەردەست: ${item.quantity}`);
+                    return;
+                }
+                
+                // زیادکردن بۆ سەبەتە
+                cart.push({
+                    id: item.id,
+                    name: item.name,
+                    color: color,
+                    quantity: quantity,
+                    price: price,
+                    total: quantity * price
+                });
+                
+                // نوێکردنەوەی سەبەتە
+                updateCartTable();
+                
+                // پاککردنەوەی خانەکان
+                colorSelect.value = '';
+                document.getElementById('clothes-quantity').value = 1;
+                clothesInfoDiv.style.display = 'none';
+            };
+        }
+        
+        function updateCartTable() {
+            const tableBody = document.querySelector('#cart-table tbody');
+            tableBody.innerHTML = '';
+            
+            let totalAmount = 0;
+            
+            cart.forEach((item, index) => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.color}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price.toLocaleString()}</td>
+                    <td>${item.total.toLocaleString()}</td>
+                    <td><button class="remove-from-cart" data-index="${index}">سڕینەوە</button></td>
+                `;
+                
+                tableBody.appendChild(row);
+                totalAmount += item.total;
+            });
+            
+            document.getElementById('total-amount').textContent = totalAmount.toLocaleString() + ' دینار';
+            
+            // زیادکردنی ڕیگای سڕینەوە
+            document.querySelectorAll('.remove-from-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    cart.splice(index, 1);
+                    updateCartTable();
+                });
+            });
+        }
+        
+        // تەواوکردنی فرۆشتن
+        document.getElementById('complete-sale').addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('سەبەتە بەتاڵە!');
+                return;
+            }
+            
+            const invoiceId = 'INV-' + Date.now();
+            const total = cart.reduce((sum, item) => sum + item.total, 0);
+            const saleDate = new Date().toISOString().split('T')[0];
+            
+            // تۆمارکردنی فرۆشتن
+            sales.push({
+                id: invoiceId,
+                date: saleDate,
+                items: [...cart],
+                total: total
+            });
+            
+            // نوێکردنەوەی بەردەستایی جلوبەرگەکان
+            cart.forEach(item => {
+                const clothesItem = clothes.find(c => c.id === item.id);
+                if (clothesItem) {
+                    clothesItem.quantity -= item.quantity;
+                }
+            });
+            
+            // پاککردنەوەی سەبەتە
+            cart = [];
+            updateCartTable();
+            
+            // نوێکردنەوەی داشبۆرد
+            updateDashboard();
+            
+            alert(`فرۆشتن تەواو بوو! کۆدی فاتوورە: ${invoiceId}`);
+        });
+        
+        // بەشی کۆگا
+        function updateInventoryTable() {
+            const tableBody = document.querySelector('#inventory-table tbody');
+            tableBody.innerHTML = '';
+            
+            clothes.forEach(item => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.barcode}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.purchasePrice.toLocaleString()}</td>
+                    <td>${item.salePrice.toLocaleString()}</td>
+                    <td>${item.colors.join(', ')}</td>
+                    <td><button class="view-clothes-details" data-id="${item.id}">سەیرکردن</button></td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // زیادکردنی جلوبەرگی نوێ
+            document.getElementById('add-new-clothes').addEventListener('click', () => {
+                const name = document.getElementById('new-clothes-name').value;
+                const purchasePrice = parseFloat(document.getElementById('new-clothes-purchase-price').value);
+                const salePrice = parseFloat(document.getElementById('new-clothes-sale-price').value);
+                const quantity = parseInt(document.getElementById('new-clothes-quantity').value);
+                const color = document.getElementById('new-clothes-color').value;
+                const barcode = document.getElementById('new-clothes-barcode').value;
+                
+                if (!name || !purchasePrice || !salePrice || isNaN(quantity) || !color || !barcode) {
+                    alert('تکایە هەموو خانەکان پڕ بکەرەوە!');
+                    return;
+                }
+                
+                const newItem = {
+                    id: clothes.length + 1,
+                    name: name,
+                    barcode: barcode,
+                    purchasePrice: purchasePrice,
+                    salePrice: salePrice,
+                    quantity: quantity,
+                    colors: [color]
+                };
+                
+                clothes.push(newItem);
+                updateInventoryTable();
+                
+                // پاککردنەوەی خانەکان
+                document.getElementById('new-clothes-name').value = '';
+                document.getElementById('new-clothes-purchase-price').value = '';
+                document.getElementById('new-clothes-sale-price').value = '';
+                document.getElementById('new-clothes-quantity').value = '0';
+                document.getElementById('new-clothes-color').value = '';
+                document.getElementById('new-clothes-barcode').value = '';
+                
+                alert('جلوبەرگ بە سەرکەوتوویی زیادکرا!');
+            });
+        }
+        
+        // مێژووی فرۆشتن
+        function updateSalesHistoryTable() {
+            const tableBody = document.querySelector('#sales-history-table tbody');
+            tableBody.innerHTML = '';
+            
+            sales.forEach(sale => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${sale.id}</td>
+                    <td>${sale.date}</td>
+                    <td>${sale.total.toLocaleString()}</td>
+                    <td><button class="view-sale-details" data-id="${sale.id}">سەیرکردن</button></td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // مێژووی کڕین
+        function updatePurchaseHistoryTable() {
+            const tableBody = document.querySelector('#purchase-history-table tbody');
+            tableBody.innerHTML = '';
+            
+            purchases.forEach(purchase => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${purchase.id}</td>
+                    <td>${purchase.date}</td>
+                    <td>${purchase.supplier}</td>
+                    <td>${(purchase.price * purchase.quantity).toLocaleString()}</td>
+                    <td><button class="view-purchase-details" data-id="${purchase.id}">سەیرکردن</button></td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // سەرفەکان
+        function updateExpensesTable() {
+            const tableBody = document.querySelector('#expenses-table tbody');
+            tableBody.innerHTML = '';
+            
+            expenses.forEach(expense => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${expense.date}</td>
+                    <td>${expense.amount.toLocaleString()}</td>
+                    <td>${expense.reason}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // زیادکردنی سەرفی نوێ
+            document.getElementById('save-expense').addEventListener('click', () => {
+                const amount = parseFloat(document.getElementById('expense-amount').value);
+                const reason = document.getElementById('expense-reason').value;
+                
+                if (isNaN(amount) || !reason) {
+                    alert('تکایە هەموو خانەکان پڕ بکەرەوە!');
+                    return;
+                }
+                
+                expenses.push({
+                    date: new Date().toISOString().split('T')[0],
+                    amount: amount,
+                    reason: reason
+                });
+                
+                updateExpensesTable();
+                updateDashboard();
+                
+                // پاککردنەوەی خانەکان
+                document.getElementById('expense-amount').value = '';
+                document.getElementById('expense-reason').value = '';
+                
+                alert('سەرف بە سەرکەوتوویی تۆمارکرا!');
+            });
+        }
+        
+        // بەشی رێکخستن
+        document.getElementById('change-password-btn').addEventListener('click', () => {
+            const oldPassword = document.getElementById('old-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-new-password').value;
+            
+            if (oldPassword !== currentPassword) {
+                document.getElementById('password-change-message').textContent = 'پاسوۆردی کۆن هەڵەیە!';
+                document.getElementById('password-change-message').style.color = 'red';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                document.getElementById('password-change-message').textContent = 'پاسوۆردی نوێ و دووبارەکردنەوەی جیاوازن!';
+                document.getElementById('password-change-message').style.color = 'red';
+                return;
+            }
+            
+            currentPassword = newPassword;
+            document.getElementById('password-change-message').textContent = 'پاسوۆرد بە سەرکەوتوویی گۆڕدرا!';
+            document.getElementById('password-change-message').style.color = 'green';
+            
+            // پاککردنەوەی خانەکان
+            document.getElementById('old-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-new-password').value = '';
+        });
+        
+        document.getElementById('reset-password-btn').addEventListener('click', () => {
+            currentPassword = defaultPassword;
+            document.getElementById('reset-password-message').textContent = 'پاسوۆرد بە سەرکەوتوویی گەڕێندرایەوە بۆ بنەڕەت!';
+            document.getElementById('reset-password-message').style.color = 'green';
+        });
+    </script>
+</body>
+</html>
